@@ -7,22 +7,27 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Навигационная панель -->
-        <nav class="navbar navbar-light bg-light">
-            <a class="navbar-brand" href="#">Книга рецептов</a>
-            <div class="ml-auto">
-                <a href="avtor" class="btn btn-outline-success my-2 my-sm-0">Авторизоваться</a>
-                <a href="regis" class="btn btn-outline-primary my-2 my-sm-0">Зарегистрироваться</a>
-            </div>
-        </nav>
+<div class="container">
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand" href="#">Книга рецептов</a>
+        <div class="ml-auto">
+            {% if username %}
+            <span class="navbar-text">Привет, {{ username }}!</span>
+            <a href="/logout" class="btn btn-danger my-2 my-sm-0">Выйти</a>
+            {% else %}
+            <a href="/avtor" class="btn btn-outline-success my-2 my-sm-0">Авторизоваться</a>
+            <a href="/regis" class="btn btn-outline-primary my-2 my-sm-0">Зарегистрироваться</a>
+            {% endif %}
+        </div>
+    </nav>
 
-        <h1 class="mt-5">Добро пожаловать на сайт книг рецептов!</h1>
-        <p>Здесь вы найдете множество замечательных рецептов для любого случая.</p>
+    <h1 class="mt-5">Добро пожаловать на сайт книг рецептов!</h1>
+    <p>Здесь вы найдете множество замечательных рецептов для любого случая.</p>
 
-        <h2 class="mt-4">Возможности сайта</h2>
-        <a href="name" class="btn btn-primary mt-3">Поиск по названию</a>
-        <a href="ingredient" class="btn btn-primary mt-3">Поиск по ингредиентам</a>
-    </div>
+    <h2 class="mt-4">Возможности сайта</h2>
+    <a href="name" class="btn btn-primary mt-3">Поиск по названию</a>
+    <a href="ingredient" class="btn btn-primary mt-3">Поиск по ингредиентам</a>
+</div>
 </body>
 </html>
