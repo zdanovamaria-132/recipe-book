@@ -41,9 +41,15 @@ def name():
     return 'поиск по названиям'
 
 
-@app.route('/ingredient')
+@app.route('/ingredient', methods=['GET', 'POST'])
 def ingredient():
-    return 'поиск по ингредиентам'
+    ingredients = ['Помидоры', 'Огурцы', 'Лук', 'Перец']  # Пример списка ингредиентов
+    if request.method == 'POST':
+        selected_ingredients = request.form.getlist('ingredients')
+        print('вы выбрали:', selected_ingredients)  # Здесь вы можете обработать выбранные ингредиенты
+        # После обработки, перенаправляем на главную страницу
+        return redirect(url_for('index'))  # Перенаправление на главный маршрут
+    return render_template('poisk-ingredient.html', ingredient=ingredients)
 
 
 @app.route('/avtor', methods=['GET', 'POST'])
