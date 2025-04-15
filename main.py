@@ -29,6 +29,7 @@ init_db()
 
 
 @app.route('/')
+@app.route('/main')
 def index():
     username = session.get('username')  # Проверяем, есть ли пользователь в сессии
     if username:
@@ -91,6 +92,52 @@ def profile():
         return render_template('profile.html', username=username)
     else:
         return redirect(url_for('avtor'))
+
+
+@app.route('/add_ingredient')
+def add_ingredient():
+    return render_template('add_recipe.html')
+
+
+@app.route('/submit_recipe', methods=['POST'])
+def submit_recipe():
+    if 'username' not in session:
+        return redirect(url_for('avtor'))  # Если пользователь не авторизован, переходим на страницу авторизации
+
+    recipe_name = request.form['recipeName']
+    description_food = request.form['descriptionFood']
+    description_recipe = request.form['recipeDescription']
+    ingredients_id = request.form[
+        'ingredients']  # Предполагается, что это строка с ID ингредиентов, но пока тут просто строка
+    img = request.form['photoUpload']
+    username = session['username']
+
+    # Вывод данных в консоль
+    print("Название рецепта:", recipe_name)
+    print("Описание блюда:", description_food)
+    print("Инструкции:", description_recipe)
+    print("Ингредиенты:", ingredients_id)
+    print('username:', username)
+
+    # Получим id пользователя из базы данных по имени пользователя
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
+    user_id = cursor.fetchone()
+
+    if user_id:
+        user_id = user_id[0]  # Получаем id пользователя
+        cursor.execute('''
+            INSERT INTO recipes (name, id_user, description_food, description_recipe, ingredient_id)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (recipe_name, user_id, description_food, description_recipe, ingredients_id))
+
+        conn.commit()
+        conn.close()
+        return "Рецепт успешно добавлен!"
+    else:
+        conn.close()
+        return "Ошибка: Пользователь не найден."
 
 
 @app.route('/logout')
