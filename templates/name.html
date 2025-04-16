@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск рецепта по названию</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Поиск по названию рецепта</h1>
+    <form method="POST" action="/name">
+        <div class="form-group">
+            <label for="search_query">Введите название рецепта</label>
+            <input type="text" class="form-control" id="search_query" name="search_query" placeholder="Например: борщ"
+                   value="{{ search_query }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Поиск</button>
+    </form>
+
+    {% if results is not none %}
+    <hr>
+    <h2>Результаты поиска:</h2>
+    {% if results %}
+    <ul class="list-group">
+        {% for recipe in results %}
+        <li class="list-group-item">
+            <h3>{{ recipe[1] }}</h3>
+            <p><strong>Описание блюда:</strong> {{ recipe[2] }}</p>
+            <p><strong>Рецепт:</strong> {{ recipe[3] }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Ничего не найдено по запросу "{{ search_query }}".</p>
+    {% endif %}
+    {% endif %}
+
+    <a href="/main" class="btn btn-secondary mt-3">Назад к главной странице</a>
+</div>
+</body>
+</html>

@@ -7,21 +7,41 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>Поиск по ингредиентам</h1>
-        <h4>Выберите ингредиенты, которые у вас есть:</h4>
+<div class="container mt-5">
+    <h1>Поиск по ингредиентам</h1>
+    <h4>Выберите ингредиенты, которые у вас есть:</h4>
 
-        <form action="/ingredient" method="POST">
-            {% for i in ingredient %}
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="ingredients" value="{{ i }}">
-                    <label class="form-check-label">
-                        {{ i }}
-                    </label>
-                </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-primary mt-3">Поиск</button>
-        </form>
-    </div>
+    <form action="/ingredient" method="POST">
+        {% for i in ingredient %}
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="ingredients" value="{{ i }}"
+                   {% if selected and i in selected %} checked {% endif %}>
+            <label class="form-check-label">
+                {{ i }}
+            </label>
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary mt-3">Поиск</button>
+    </form>
+
+    {% if results is not none %}
+    <hr>
+    <h2>Результаты поиска</h2>
+    {% if results %}
+    <ul class="list-group">
+        {% for recipe in results %}
+        <li class="list-group-item">
+            <h3>{{ recipe[1] }}</h3> <!-- Название рецепта -->
+            <p><strong>Описание блюда:</strong> {{ recipe[2] }}</p>
+            <p><strong>Рецепт:</strong> {{ recipe[3] }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Ничего не найдено для выбранных ингредиентов.</p>
+    {% endif %}
+    {% endif %}
+    <a href="/main" class="btn btn-secondary mt-3">Назад к главной странице</a>
+</div>
 </body>
 </html>

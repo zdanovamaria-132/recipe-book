@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактирование рецепта</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Редактирование рецепта</h1>
+    <form method="POST">
+        <div class="form-group">
+            <label for="recipeName">Название блюда:</label>
+            <input type="text" class="form-control" id="recipeName" name="recipeName" value="{{ recipe[1] }}" required>
+        </div>
+        <div class="form-group">
+            <label for="descriptionFood">Описание блюда</label>
+            <textarea class="form-control" id="descriptionFood" name="descriptionFood" rows="3"
+                      required>{{ recipe[3] }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="recipeDescription">Рецепт и порядок действий</label>
+            <textarea class="form-control" id="recipeDescription" name="recipeDescription" rows="5" required>{{ recipe[4] }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="ingredients">Ингредиенты</label>
+            <textarea class="form-control" id="ingredients" name="ingredients" rows="3"
+                      required>{{ recipe[5] }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        <a href="/profile" class="btn btn-secondary mt-3">Отменить</a>
+    </form>
+</div>
+</body>
+</html>
