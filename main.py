@@ -58,6 +58,12 @@ def init_db():
             FOREIGN KEY (recipe_id) REFERENCES recipes(id)
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS ingredients (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -94,7 +100,14 @@ def name():
 
 @app.route('/ingredient', methods=['GET', 'POST'])
 def ingredient():
-    ingredients_list = ['Помидоры', 'Огурцы', 'Лук', 'Перец']
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT name FROM ingredients')
+    curs_ingr_name = cursor.fetchall()
+    if curs_ingr_name:
+        ingredients_list = [i[0] for i in curs_ingr_name]
+    else:
+        ingredients_list = []
 
     if request.method == 'POST':
         selected_ingredients = request.form.getlist('ingredients')
@@ -122,7 +135,8 @@ def ingredient():
             selected=selected_ingredients
         )
 
-    return render_template('poisk-ingredient.html', ingredient=ingredients_list, results=None, selected=[])
+    return render_template('poisk-ingredient.html', ingredient=ingredients_list, results=None,
+                               selected=[])
 
 
 @app.route('/avtor', methods=['GET', 'POST'])
@@ -215,6 +229,29 @@ def submit_recipe():
     description_recipe = request.form['recipeDescription']
     ingredients_id = request.form['ingredients']
     username = session['username']
+
+    # добавление ингредиентов в бд
+    if ingredients_id:
+        ingr_list = ingredients_id.split(', ')
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT name FROM ingredients')
+        curs_ingr_name = cursor.fetchone()
+        if curs_ingr_name:
+            name_ingr = [i[0] for i in curs_ingr_name]
+        else:
+            name_ingr = []
+        for i in ingr_list:
+            if not (i in name_ingr):
+                cursor.execute('''
+                            INSERT INTO ingredients (name)
+                            VALUES (?)
+                        ''', (i, ))
+                conn.commit()
+                print('ингредиент добавлен')
+        conn.close()
+
+
 
     # Работа с файлом:
     img_file = request.files.get('photoUpload')
