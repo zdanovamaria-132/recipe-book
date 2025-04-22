@@ -360,6 +360,25 @@ def edit_recipe(recipe_id):
     conn.close()
     return render_template('edit_recipe.html', recipe=recipe)
 
+# http://127.0.0.1:5000/recipe_watch?recipe_id=4
+@app.route('/recipe_watch')
+def recipe_watch():
+    recipe_id = request.args.get('recipe_id')
+    print(recipe_id)
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, description_food, description_recipe, ingredient_id FROM recipes WHERE id = ?",
+                   (recipe_id,))
+    recipe = cursor.fetchone()
+    if recipe:
+        ingredients = recipe[-1].split(', ')
+        title = recipe[0]
+        description = recipe[1]
+        instructions = recipe[2].split('\n')
+    return render_template('recipe-watch.html', title=title, description=description,
+                           ingredients=ingredients, instructions=instructions)
+
+
 
 @app.route('/rate_recipe/<int:recipe_id>', methods=['POST'])
 def rate_recipe(recipe_id):

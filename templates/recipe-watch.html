@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рецепт</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .recipe-container {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <nav class="navbar navbar-light bg-light">
+            <a class="navbar-brand" href="/main">Книга рецептов</a>
+    </nav>
+    <div class="recipe-container">
+        <h1 class="display-4">{{ title }}</h1>
+        <h2>Описание:</h2>
+        <p class="lead">{{ description }}</p>
+
+        <h2>Ингредиенты:</h2>
+        <ul class="list-group mb-3">
+            {% for ingredient in ingredients %}
+                <li class="list-group-item">{{ ingredient }}</li>
+            {% endfor %}
+        </ul>
+
+        <h2>Рецепт:</h2>
+        <ol>
+            {% for step in instructions %}
+                <li>{{ step }}</li>
+            {% endfor %}
+        </ol>
+    </div>
+</div>
+
+</body>
+</html>
