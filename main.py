@@ -229,61 +229,58 @@ def submit_recipe():
     description_recipe = request.form['recipeDescription']
     ingredients_id = request.form['ingredients']
     username = session['username']
+    ingr_list = [i.strip() for i in ingredients_id.split('\n')] # ингредиенты с грамовкой
+    ingr_name = [i.split()[0].strip() for i in ingr_list] # названия ингредиентов без граммовки
+    if not any(char.isdigit() for char in ingr_name): # проверка, что в ингредиентах нет чисел
+        # добавление ингредиентов в бд
+        if ingredients_id:
+            conn = sqlite3.connect('database.db')
+            cursor = conn.cursor()
+            cursor.execute('SELECT name FROM ingredients')
+            curs_ingr_name = cursor.fetchall()
+            name_ingr = [i[0] for i in curs_ingr_name] if curs_ingr_name else []
+            for ingr in ingr_name:
+                if ingr and ingr not in name_ingr:
+                    cursor.execute('INSERT INTO ingredients (name) VALUES (?)', (ingr,))
+                    conn.commit()
+                    print('ингредиент добавлен')
+            conn.close()
 
-    # добавление ингредиентов в бд
-    if ingredients_id:
-        ingr_list = ingredients_id.split(', ')
-        conn = sqlite3.connect('database.db')
-        cursor = conn.cursor()
-        cursor.execute('SELECT name FROM ingredients')
-        curs_ingr_name = cursor.fetchone()
-        if curs_ingr_name:
-            name_ingr = [i[0] for i in curs_ingr_name]
-        else:
-            name_ingr = []
-        for i in ingr_list:
-            if not (i in name_ingr):
+
+
+            # Работа с файлом:
+            img_file = request.files.get('photoUpload')
+            img_path = None
+            if img_file and img_file.filename != "":
+                filename = secure_filename(img_file.filename)
+                img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                img_file.save(img_path)
+
+            print("Название рецепта:", recipe_name)
+            print("Описание блюда:", description_food)
+            print("Инструкции:", description_recipe)
+            print("Ингредиенты:", ingredients_id)
+            print('username:', username)
+
+            conn = sqlite3.connect('database.db')
+            cursor = conn.cursor()
+            cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
+            user_id = cursor.fetchone()
+
+            if user_id:
+                user_id = user_id[0]  # Получаем id пользователя
                 cursor.execute('''
-                            INSERT INTO ingredients (name)
-                            VALUES (?)
-                        ''', (i, ))
+                    INSERT INTO recipes (name, id_user, description_food, description_recipe, ingredient_id)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (recipe_name, user_id, description_food, description_recipe, ingredients_id))
                 conn.commit()
-                print('ингредиент добавлен')
-        conn.close()
-
-
-
-    # Работа с файлом:
-    img_file = request.files.get('photoUpload')
-    img_path = None
-    if img_file and img_file.filename != "":
-        filename = secure_filename(img_file.filename)
-        img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        img_file.save(img_path)
-
-    print("Название рецепта:", recipe_name)
-    print("Описание блюда:", description_food)
-    print("Инструкции:", description_recipe)
-    print("Ингредиенты:", ingredients_id)
-    print('username:', username)
-
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
-    user_id = cursor.fetchone()
-
-    if user_id:
-        user_id = user_id[0]  # Получаем id пользователя
-        cursor.execute('''
-            INSERT INTO recipes (name, id_user, description_food, description_recipe, ingredient_id)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (recipe_name, user_id, description_food, description_recipe, ingredients_id))
-        conn.commit()
-        conn.close()
-        return "Рецепт успешно добавлен!"
+                conn.close()
+                return "Рецепт успешно добавлен!"
+            else:
+                conn.close()
+                return "Ошибка: Пользователь не найден."
     else:
-        conn.close()
-        return "Ошибка: Пользователь не найден."
+        return 'Вы ввели некорректные данные'
 
 
 @app.route('/delete_recipe/<int:recipe_id>', methods=['POST'])
