@@ -1,34 +1,46 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Книга рецептов</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
 </head>
 <body>
-<div class="container">
-    <!-- Навигационная панель -->
-    <nav class="navbar navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
         <a class="navbar-brand" href="#">Книга рецептов</a>
-        <div class="ml-auto">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent"
+                aria-controls="navbarContent" aria-expanded="false" aria-label="Переключатель навигации">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
             {% if username %}
-            <span class="navbar-text">Привет, {{ username }}!</span>
+            <span class="navbar-text mr-3">Привет, {{ username }}!</span>
+            <a href="/profile" class="btn btn-outline-primary mr-2 my-2 my-sm-0">Профиль</a>
             <a href="/logout" class="btn btn-danger my-2 my-sm-0">Выйти</a>
-            <a href="/profile" class="btn btn-danger my-2 my-sm-0">Профиль</a>
             {% else %}
-            <a href="/avtor" class="btn btn-outline-success my-2 my-sm-0">Авторизоваться</a>
+            <a href="/avtor" class="btn btn-outline-success mr-2 my-2 my-sm-0">Авторизоваться</a>
             <a href="/regis" class="btn btn-outline-primary my-2 my-sm-0">Зарегистрироваться</a>
             {% endif %}
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <h1 class="mt-5">Добро пожаловать на сайт книг рецептов!</h1>
-    <p>Здесь вы найдете множество замечательных рецептов для любого случая.</p>
+<div class="container mt-5">
+    <h1 class="mb-3">Добро пожаловать на сайт книг рецептов!</h1>
+    <p class="lead">Здесь вы найдете множество замечательных рецептов для любого случая.</p>
 
-    <h2 class="mt-4">Возможности сайта</h2>
-    <a href="name" class="btn btn-primary mt-3">Поиск по названию</a>
-    <a href="ingredient" class="btn btn-primary mt-3">Поиск по ингредиентам</a>
+    <h2 class="mt-5 mb-4">Возможности сайта</h2>
+    <div class="d-flex flex-wrap">
+        <a href="name" class="btn btn-primary mr-3 mb-3">Поиск по названию</a>
+        <a href="ingredient" class="btn btn-primary mb-3">Поиск по ингредиентам</a>
+    </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

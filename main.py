@@ -214,6 +214,43 @@ def profile():
         return redirect(url_for('avtor'))
 
 
+@app.route('/favorite_recipe')
+def favorite_recipe():
+    username = session['username']
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM users WHERE username = ?', (username,))# Получаем user_id
+    user = cursor.fetchone()
+    if not user:
+        return "Пользователь не найден"
+
+    user_id = user[0]
+
+    cursor.execute('SELECT recipe_id FROM favorites WHERE user_id = ?', (user_id,))
+    recipes_id_tuples = cursor.fetchall()
+    # Преобразуем кортежи в список
+    recipes_id = [rid[0] for rid in recipes_id_tuples]
+    if not recipes_id:
+
+        return "Избранных рецептов нет"
+
+    # Формируем строку с нужным количеством знаков вопроса для запроса IN
+    placeholders = ','.join(['?'] * len(recipes_id))
+    query = f'SELECT id, name, description_food FROM recipes WHERE id IN ({placeholders})'
+
+    cursor.execute(query, recipes_id)
+    recipes_inf = cursor.fetchall()
+    conn.close()
+
+    print(recipes_inf)
+    recipes_list = []
+    for recipe in recipes_inf:
+        set_recipe = {"id": recipe[0], "name": recipe[1], "description": recipe[2]}
+        recipes_list.append(set_recipe)
+
+    return render_template('favorite_recipe.html', favorite_ingredients=recipes_list)
+
+
 @app.route('/add_ingredient')
 def add_ingredient():
     return render_template('add_recipe.html')
@@ -242,11 +279,6 @@ def submit_recipe():
             for ingr in ingr_name:
                 if ingr and ingr not in name_ingr:
                     cursor.execute('INSERT INTO ingredients (name) VALUES (?)', (ingr,))
-                    conn.commit()
-                    print('ингредиент добавлен')
-            conn.close()
-
-
 
             # Работа с файлом:
             img_file = request.files.get('photoUpload')
@@ -262,8 +294,6 @@ def submit_recipe():
             print("Ингредиенты:", ingredients_id)
             print('username:', username)
 
-            conn = sqlite3.connect('database.db')
-            cursor = conn.cursor()
             cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
             user_id = cursor.fetchone()
 
@@ -372,7 +402,7 @@ def recipe_watch():
         title = recipe[0]
         description = recipe[1]
         instructions = recipe[2].split('\n')
-    return render_template('recipe-watch.html', title=title, description=description,
+        return render_template('recipe-watch.html', title=title, description=description,
                            ingredients=ingredients, instructions=instructions)
 
 

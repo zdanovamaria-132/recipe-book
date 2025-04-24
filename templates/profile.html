@@ -7,33 +7,70 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         .star {
-          font-size: 1.2rem;
-          color: #ccc;
+            font-size: 1.5rem;
+            color: #ccc;
+            user-select: none;
+            transition: color 0.2s;
         }
         .star.filled {
-          color: gold;
+            color: gold;
+        }
+        /* Стили для звездочек в форме рейтинга */
+        .rating-input {
+            display: none;
+        }
+        .rating-label {
+            font-size: 1.5rem;
+            color: #ccc;
+            cursor: pointer;
+            margin-right: 4px;
+            user-select: none;
+            transition: color 0.2s;
+        }
+        .rating-input:checked ~ .rating-label,
+        .rating-label:hover,
+        .rating-label:hover ~ .rating-label {
+            color: gold !important;
         }
     </style>
 </head>
 <body>
 <div class="container mt-5">
-    <nav class="navbar navbar-light bg-light">
-            <a class="navbar-brand" href="/main">Книга рецептов</a>
+    <nav class="navbar navbar-light bg-light mb-4 rounded">
+        <a class="navbar-brand" href="/main">Книга рецептов</a>
     </nav>
-    <h1>Профиль пользователя</h1>
-    <p>Добро пожаловать, {{ username }}!</p>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">Профиль пользователя</h1>
+        <a href="/logout" class="btn btn-danger btn-sm">Выйти</a>
+    </div>
+
+    <p class="lead">Добро пожаловать, <strong>{{ username }}</strong>!</p>
+
+    <a href="/favorite_recipe" class="btn btn-warning btn-sm mb-4">Посмотреть избранное</a>
 
     {% if recipes %}
-    <h2>Ваши рецепты:</h2>
+    <h2 class="mb-3">Ваши рецепты:</h2>
     <ul class="list-group">
         {% for recipe in recipes %}
-        <li class="list-group-item">
-            <h3>{{ recipe.name }}</h3>
+        <li class="list-group-item mb-3 rounded shadow-sm">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h3 class="h5 mb-0">{{ recipe.name }}</h3>
+                <div>
+                    <a href="/edit_recipe/{{ recipe.id }}" class="btn btn-outline-warning btn-sm mr-2">Редактировать</a>
+                    <form action="/delete_recipe/{{ recipe.id }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger btn-sm"
+                                onclick="return confirm('Вы действительно хотите удалить рецепт?');">Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
             <p><strong>Описание блюда:</strong> {{ recipe.description_food }}</p>
             <p><strong>Рецепт:</strong> {{ recipe.description_recipe }}</p>
-            <p><strong>Ингредиенты:</strong> {{ recipe.ingredients }}</p>
-            <p><strong>Категория:</strong> {{ recipe.category }}</p>
-            <p><strong>Рейтинг:</strong>
+            <p><strong>Ингредиенты:</strong> {{recipe.ingredients}}</p>
+            <p><strong>Категория:</strong> {{recipe.category}}</p>
+            <p>
+                <strong>Рейтинг:</strong>
                 {% set avg = recipe.avg_rating or 0 %}
                 {% for i in range(1,6) %}
                 {% if i <= avg|round(0, 'floor') %}
@@ -43,49 +80,50 @@
                 {% endif %}
                 {% endfor %}
                 {% if avg == 0 %}
-                <small>(нет оценок)</small>
+                <small class="text-muted">(нет оценок)</small>
                 {% endif %}
             </p>
 
-            <!-- Форма для выставления оценки -->
-            <form action="/rate_recipe/{{ recipe.id }}" method="POST" style="display: inline-block;">
-                <div class="form-group" style="margin-bottom:0;">
-                    <!-- Здесь можно сделать radio кнопки, стилизованные как звёзды -->
-                    {% for i in range(1,6) %}
-                    <input type="radio" id="star{{ i }}_{{ recipe.id }}" name="rating" value="{{ i }}"
-                           style="display: none;">
-                    <label for="star{{ i }}_{{ recipe.id }}" style="cursor:pointer;">&#9733;</label>
-                    {% endfor %}
-                </div>
-                <button type="submit" class="btn btn-secondary btn-sm">Оценить</button>
-            </form>
+            <div class="d-flex flex-wrap align-items-center mb-2">
+                <!-- Форма для выставления оценки -->
+                <form action="/rate_recipe/{{ recipe.id }}" method="POST" class="mr-3 mb-2 d-flex align-items-center">
+                    <div class="form-group mb-0 d-flex align-items-center">
+                        {% for i in range(5,0,-1) %}
+                        <input type="radio" id="star{{ i }}_{{ recipe.id }}" name="rating" value="{{ i }}" class="rating-input">
+                        <label for="star{{ i }}_{{ recipe.id }}" class="rating-label">&#9733;</label>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-sm ml-2">Оценить</button>
+                </form>
 
-            <!-- Избранное -->
-            <form action="/toggle_favorite/{{ recipe.id }}" method="POST" style="display:inline-block;">
-                {% if recipe.favorite %}
-                <button type="submit" class="btn btn-danger btn-sm">Удалить из избранного</button>
-                {% else %}
-                <button type="submit" class="btn btn-success btn-sm">Добавить в избранное</button>
-                {% endif %}
-            </form>
-
-            <!-- Кнопки для редактирования и удаления рецепта -->
-            <a href="/edit_recipe/{{ recipe.id }}" class="btn btn-warning btn-sm">Редактировать</a>
-            <form action="/delete_recipe/{{ recipe.id }}" method="POST" style="display:inline-block;">
-                <button type="submit" class="btn btn-danger btn-sm"
-                        onclick="return confirm('Вы действительно хотите удалить рецепт?');">Удалить
-                </button>
-            </form>
-
+                <!-- Избранное -->
+                <form action="/toggle_favorite/{{ recipe.id }}" method="POST" class="mb-2">
+                    {% if recipe.favorite %}
+                    <button type="submit" class="btn btn-danger btn-sm">Удалить из избранного</button>
+                    {% else %}
+                    <button type="submit" class="btn btn-success btn-sm">Добавить в избранное</button>
+                    {% endif %}
+                </form>
+            </div>
         </li>
         {% endfor %}
     </ul>
     {% else %}
-    <p>У вас пока нет добавленных рецептов.</p>
+    <div class="alert alert-info" role="alert">
+        У вас пока нет добавленных рецептов.
+    </div>
     {% endif %}
 
-    <a href="/logout" class="btn btn-danger mt-3">Выйти</a>
-    <a href="/add_ingredient" class="btn btn-primary mt-3">Добавить рецепт</a>
+    <div class="mt-4 d-flex flex-wrap gap-2">
+        <a href="/add_ingredient" class="btn btn-primary">Добавить рецепт</a>
+    </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-LtrjvnR4/JqsF8IhMtmUW6u7SAgoZ6LJIiQf6hZ4hBvlYYm72MYs6PZmZG8fNMGa"
+        crossorigin="anonymous"></script>
 </body>
 </html>

@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Поиск рецепта по названию</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
 </head>
 <body>
+<nav class="navbar navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="/main">Книга рецептов</a>
+    </div>
+</nav>
+
 <div class="container mt-5">
-    <nav class="navbar navbar-light bg-light">
-            <a class="navbar-brand" href="/main">Книга рецептов</a>
-    </nav>
-    <h1>Поиск по названию рецепта</h1>
+    <h1 class="mb-4">Поиск по названию рецепта</h1>
+
     <form method="POST" action="/name">
         <div class="form-group">
             <label for="search_query">Введите название рецепта</label>
@@ -22,24 +26,30 @@
     </form>
 
     {% if results is not none %}
-    <hr>
-    <h2>Результаты поиска:</h2>
+    <hr class="my-4" />
+    <h2 class="mb-4">Результаты поиска:</h2>
     {% if results %}
     <ul class="list-group">
         {% for recipe in results %}
         <li class="list-group-item">
-            <h3>{{ recipe[1] }}</h3>
+            <h5>{{ recipe[1] }}</h5>
             <p><strong>Описание блюда:</strong> {{ recipe[2] }}</p>
-            <a href="/recipe_watch?recipe_id={{ recipe[0] }}" class="btn btn-outline-success my-2 my-sm-0">Посмотреть</a>
+            <a href="/recipe_watch?recipe_id={{ recipe[0] }}" class="btn btn-outline-success">Посмотреть</a>
         </li>
         {% endfor %}
     </ul>
     {% else %}
-    <p>Ничего не найдено по запросу "{{ search_query }}".</p>
+    <div class="alert alert-warning" role="alert">
+        Ничего не найдено по запросу "{{ search_query }}".
+    </div>
     {% endif %}
     {% endif %}
 
-    <a href="/main" class="btn btn-secondary mt-3">Назад к главной странице</a>
+    <a href="/main" class="btn btn-secondary mt-4">Назад к главной странице</a>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
