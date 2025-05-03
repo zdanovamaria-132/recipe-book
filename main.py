@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+from unicodedata import category
+
 from flask_session import Session
 import sqlite3
 from werkzeug.utils import secure_filename
@@ -185,29 +187,21 @@ def profile():
         user_id = user_row[0]
 
         cursor.execute('''
-            SELECT id, name, description_food, description_recipe, ingredient_id, category 
+            SELECT id, name, description_recipe
             FROM recipes 
             WHERE id_user = ?
         ''', (user_id,))
         recipes_raw = cursor.fetchall()
         recipes = []
         for rec in recipes_raw:
-            recipe_id, name, desc_food, desc_recipe, ingredients, category = rec
-            cursor.execute("SELECT AVG(rating) FROM ratings WHERE recipe_id = ?", (recipe_id,))
-            avg_rating = cursor.fetchone()[0]
+            recipe_id, name, desc_recipe = rec
 
-            cursor.execute("SELECT id FROM favorites WHERE user_id = ? AND recipe_id = ?", (user_id, recipe_id))
-            is_favorite = bool(cursor.fetchone())
             recipes.append({
                 'id': recipe_id,
                 'name': name,
-                'description_food': desc_food,
-                'description_recipe': desc_recipe,
-                'ingredients': ingredients,
-                'category': category,
-                'avg_rating': avg_rating,
-                'favorite': is_favorite
+                'description_recipe': desc_recipe
             })
+
         conn.close()
         return render_template('profile.html', username=username, recipes=recipes)
     else:
@@ -266,6 +260,7 @@ def submit_recipe():
     description_recipe = request.form['recipeDescription']
     ingredients_id = request.form['ingredients']
     username = session['username']
+    categor = request.form['category']
     ingr_list = [i.strip() for i in ingredients_id.split('\n')] # ингредиенты с грамовкой
     ingr_name = [i.split()[0].strip() for i in ingr_list] # названия ингредиентов без граммовки
     if not any(char.isdigit() for char in ingr_name): # проверка, что в ингредиентах нет чисел
@@ -300,9 +295,9 @@ def submit_recipe():
             if user_id:
                 user_id = user_id[0]  # Получаем id пользователя
                 cursor.execute('''
-                    INSERT INTO recipes (name, id_user, description_food, description_recipe, ingredient_id)
-                    VALUES (?, ?, ?, ?, ?)
-                ''', (recipe_name, user_id, description_food, description_recipe, ingredients_id))
+                    INSERT INTO recipes (name, id_user, description_food, description_recipe, ingredient_id, category)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (recipe_name, user_id, description_food, description_recipe, ingredients_id, categor))
                 conn.commit()
                 conn.close()
                 return "Рецепт успешно добавлен!"
@@ -374,12 +369,13 @@ def edit_recipe(recipe_id):
         updated_desc_food = request.form['descriptionFood']
         updated_desc_recipe = request.form['recipeDescription']
         updated_ingredients = request.form['ingredients']
+        updated_category = request.form['category']  # Получаем категорию из формы
 
         cursor.execute("""
             UPDATE recipes
-            SET name = ?, description_food = ?, description_recipe = ?, ingredient_id = ?
+            SET name = ?, description_food = ?, description_recipe = ?, ingredient_id = ?, category = ?
             WHERE id = ?
-        """, (updated_name, updated_desc_food, updated_desc_recipe, updated_ingredients, recipe_id))
+        """, (updated_name, updated_desc_food, updated_desc_recipe, updated_ingredients, updated_category, recipe_id))
         conn.commit()
         conn.close()
         return redirect(url_for('profile'))
@@ -387,25 +383,45 @@ def edit_recipe(recipe_id):
     conn.close()
     return render_template('edit_recipe.html', recipe=recipe)
 
-# http://127.0.0.1:5000/recipe_watch?recipe_id=4
+
 @app.route('/recipe_watch')
 def recipe_watch():
+    username = session['username']
     recipe_id = request.args.get('recipe_id')
-    print(recipe_id)
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT name, description_food, description_recipe, ingredient_id FROM recipes WHERE id = ?",
-                   (recipe_id,))
-    recipe = cursor.fetchone()
-    if recipe:
-        ingredients = recipe[-1].split(', ')
-        title = recipe[0]
-        description = recipe[1]
-        instructions = recipe[2].split('\n')
-        return render_template('recipe-watch.html', title=title, description=description,
-                           ingredients=ingredients, instructions=instructions)
+    btn = None
+    if username:
+        user_id = cursor.execute('''SELECT id FROM users WHERE username = ?''', (username,)).fetchone()[0]
+        btn = True
+    else:
+        btn = False
+    cursor.execute('''
+                SELECT id, name, description_food, description_recipe, ingredient_id, category 
+                FROM recipes 
+                WHERE id = ?
+            ''', (recipe_id,))
+    rec = cursor.fetchone()
 
+    if rec:
+        recipe_id, name, desc_food, desc_recipe, ingredients_str, category = rec
+        cursor.execute("SELECT AVG(rating) FROM ratings WHERE recipe_id = ?", (recipe_id,))
+        avg_rating = cursor.fetchone()[0]
 
+        cursor.execute("SELECT id FROM favorites WHERE user_id = ? AND recipe_id = ?", (user_id, recipe_id))
+        is_favorite = bool(cursor.fetchone())
+        recipe = ({
+            'id': recipe_id,
+            'name': name,
+            'description_food': desc_food,
+            'description_recipe': desc_recipe.split('\n'),
+            'ingredients': ingredients_str.split('\n'),
+            'category': category,
+            'avg_rating': avg_rating,
+            'favorite': is_favorite
+        })
+        conn.close()
+        return render_template('recipe-watch.html', username=username, recipe=recipe, btn=btn)
 
 @app.route('/rate_recipe/<int:recipe_id>', methods=['POST'])
 def rate_recipe(recipe_id):
