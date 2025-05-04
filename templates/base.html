@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>{% block title %}Книга рецептов{% endblock %}</title>
+    <!-- Подключение Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+</head>
+<body>
+<!-- Навигационная панель -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <!-- Название сайта ведёт на главную страницу -->
+        <a class="navbar-brand" href="{{ url_for('index') }}">Книга рецептов</a>
+        <div class="ml-auto">
+            <!-- Кнопка «Домой» всегда видна -->
+            <a href="{{ url_for('index') }}" class="btn btn-warning">Домой</a>
+
+            {% if session.username %}
+            <!-- Если пользователь авторизован, показываем кнопку Профиль и Выйти -->
+            <a href="{{ url_for('profile') }}" class="btn btn-info ml-2">Профиль</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger ml-2">Выйти</a>
+            {% else %}
+            <!-- Если пользователь не авторизован, показываем кнопки Войти и Регистрация -->
+            <a href="{{ url_for('avtor') }}" class="btn btn-info ml-2">Войти</a>
+            <a href="{{ url_for('regis') }}" class="btn btn-success ml-2">Регистрация</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <!-- Блок для flash-сообщений -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    {% block content %}
+    {% endblock %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

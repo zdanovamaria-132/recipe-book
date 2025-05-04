@@ -1,55 +1,37 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Поиск рецепта по названию</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
-</head>
-<body>
-<nav class="navbar navbar-light bg-light">
-    <div class="container">
-        <a class="navbar-brand" href="/main">Книга рецептов</a>
+{% extends "base.html" %}
+
+{% block title %}Поиск рецепта по названию{% endblock %}
+
+{% block content %}
+<h1 class="mt-4">Поиск рецепта по названию</h1>
+<form method="POST" action="/name">
+    <div class="form-group">
+        <label for="search_query">Введите название рецепта</label>
+        <input type="text" class="form-control" id="search_query" name="search_query" placeholder="Например: борщ"
+               value="{{ search_query }}" required>
     </div>
-</nav>
+    <button type="submit" class="btn btn-primary">Поиск</button>
+</form>
 
-<div class="container mt-5">
-    <h1 class="mb-4">Поиск по названию рецепта</h1>
-
-    <form method="POST" action="/name">
-        <div class="form-group">
-            <label for="search_query">Введите название рецепта</label>
-            <input type="text" class="form-control" id="search_query" name="search_query" placeholder="Например: борщ"
-                   value="{{ search_query }}" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Поиск</button>
-    </form>
-
-    {% if results is not none %}
-    <hr class="my-4" />
-    <h2 class="mb-4">Результаты поиска:</h2>
-    {% if results %}
-    <ul class="list-group">
-        {% for recipe in results %}
-        <li class="list-group-item">
-            <h5>{{ recipe[1] }}</h5>
-            <p><strong>Описание блюда:</strong> {{ recipe[2] }}</p>
-            <a href="/recipe_watch?recipe_id={{ recipe[0] }}" class="btn btn-outline-success">Посмотреть</a>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <div class="alert alert-warning" role="alert">
-        Ничего не найдено по запросу "{{ search_query }}".
-    </div>
-    {% endif %}
-    {% endif %}
-
-    <a href="/main" class="btn btn-secondary mt-4">Назад к главной странице</a>
+{% if results is not none %}
+<hr class="my-4">
+<h2>Результаты поиска:</h2>
+{% if results %}
+<ul class="list-group">
+    {% for recipe in results %}
+    <li class="list-group-item">
+        <h5>{{ recipe[1] }}</h5>
+        <p><strong>Описание блюда:</strong> {{ recipe[2] }}</p>
+        <a href="/recipe_watch?recipe_id={{ recipe[0] }}" class="btn btn-outline-success">Посмотреть</a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div class="alert alert-warning" role="alert">
+    Ничего не найдено по запросу "{{ search_query }}".
 </div>
+{% endif %}
+{% endif %}
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+<a href="/main" class="btn btn-secondary mt-4">Назад к главной странице</a>
+{% endblock %}
