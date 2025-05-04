@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-from unicodedata import category
+from PIL import Image
+import os
 
 from flask_session import Session
 import sqlite3
@@ -187,19 +188,19 @@ def profile():
         user_id = user_row[0]
 
         cursor.execute('''
-            SELECT id, name, description_recipe
+            SELECT id, name, description_food
             FROM recipes 
             WHERE id_user = ?
         ''', (user_id,))
         recipes_raw = cursor.fetchall()
         recipes = []
         for rec in recipes_raw:
-            recipe_id, name, desc_recipe = rec
+            recipe_id, name, description_food = rec
 
             recipes.append({
                 'id': recipe_id,
                 'name': name,
-                'description_recipe': desc_recipe
+                'description_food': description_food
             })
 
         conn.close()
@@ -279,15 +280,17 @@ def submit_recipe():
             img_file = request.files.get('photoUpload')
             img_path = None
             if img_file and img_file.filename != "":
-                filename = secure_filename(img_file.filename)
-                img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                img_file.save(img_path)
+                name_img = ''.join(str(ord(i)) for i in recipe_name)
+                filename = secure_filename(name_img) + '.png'
 
-            print("Название рецепта:", recipe_name)
-            print("Описание блюда:", description_food)
-            print("Инструкции:", description_recipe)
-            print("Ингредиенты:", ingredients_id)
-            print('username:', username)
+                img_path = os.path.join('static', 'imgs', filename)
+                img = Image.open(img_file)
+                width, height = img.size
+                if height > 400:
+                    new_height = 400
+                    new_width = int((new_height / height) * width)
+                    img = img.resize((new_width, new_height))
+                img.save(img_path, format='PNG')
 
             cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
             user_id = cursor.fetchone()
@@ -413,12 +416,13 @@ def recipe_watch():
         recipe = ({
             'id': recipe_id,
             'name': name,
-            'description_food': desc_food,
-            'description_recipe': desc_recipe.split('\n'),
+            'description': desc_food,
+            'instructions': desc_recipe.split('\n'),
             'ingredients': ingredients_str.split('\n'),
             'category': category,
             'avg_rating': avg_rating,
-            'favorite': is_favorite
+            'favorite': is_favorite,
+            'img': os.path.join('static', 'imgs', ''.join(str(ord(i)) for i in name) + '.png')
         })
         conn.close()
         return render_template('recipe-watch.html', username=username, recipe=recipe, btn=btn)
